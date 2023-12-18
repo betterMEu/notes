@@ -6,16 +6,18 @@
 
 
 
-~~~html
--webkit-filter: grayscale(100%);
--moz-filter: grayscale(100%);
--ms-filter: grayscale(100%);
--o-filter: grayscale(100%);
+~~~css
+html {
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
 
-//这一行就搞定
-filter: grayscale(100%);
+    //这一行就搞定
+    filter: grayscale(100%);
 
-filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+    filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+}
 ~~~
 
 
@@ -26,63 +28,47 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
 
 # 选择器
 
-
-
 ### 元素选择器
 
-元素，指的是 HTML 的标签。
-
 ~~~css
-元素名称 {
+元素名[, 元素名, ...] {
     键: 值;
     ...
 }
+~~~
 
-eg: h1 元素文字置为红色
+~~~css
+/*h1 元素文字置为红色*/
 h1 {
     color: red
 }
-~~~
-
-
-
-同时选择多个元素
-
-~~~css
+/*同时选择多个元素*/
 p, li {
     color: green;
 }
 ~~~
 
-会将段落和列表的字体颜色变成 green。
-
-
-
 
 
 ### 类名选择器
 
-我只想修改第二个 *li* 的样式，该如何呢？
+拥有此类名的都会应用样式
+
+~~~css
+.类名 {
+    ....
+}
+~~~
 
 ~~~html
 <ul>
   <li>项目一</li>
   <li class="special">项目二</li>
-  <li>项目 <em>三</em></li>
+  
 </ul>
 ~~~
 
-
-
-在选择器的开头加个西文句点（.）+ 类名
-
 ~~~css
-.类名 {
-    键: 值;
-    ....
-}
-
-eg:
 .special {
   color: orange;
   font-weight: bold;
@@ -90,79 +76,69 @@ eg:
 
 ~~~
 
-这个 `special` 类型可不局限于列表，它可以应用到各种元素上。
+
+
+对一个标签同时应用多个类，然后分别指向它们
+
+~~~html
+<div class="notebox">
+    This is an informational note.
+</div>
+
+<div class="notebox warning">
+    This note shows a warning.
+</div>
+
+<div class="notebox danger">
+    This note shows danger!
+</div>
+
+<div class="danger">
+    This won't get styled — it also needs to have the notebox class
+</div>
+~~~
+
+~~~css
+.notebox {
+  border: 4px solid #666;
+  padding: .5em;
+}
+
+.notebox.warning {  /* 中间没有空格，直接相连*/
+  border-color: orange;
+  font-weight: bold;
+}
+
+.notebox.danger {  /* 中间没有空格，直接相连*/
+  border-color: red;
+  font-weight: bold;
+}
+~~~
+
+![image-20230207162927892](assets/image-20230207162927892.png)
 
 
 
 
 
-1. ***元素 + 类名选择器***
+### 元素.类名选择器
 
-   选择器中，有时 HTML 元素选择器跟类一起出现：
+~~~css
+li.special {
+  color: orange;
+  font-weight: bold; 
+}
+~~~
 
-   ~~~css
-   li.special {
-     color: orange;
-     font-weight: bold; 
-   }
-   ~~~
+~~~css
+li.special,
+span.special {
+  color: orange;
+  font-weight: bold;
+}
+~~~
 
-   这个意思是说，***“选中每个 `special` 类的 `li` 元素”***。
 
-   它对 `<span>` 还有其它元素不起作用了。
-
-   可以把这个元素再添上去就是了：
-
-   ~~~css
-   li.special,
-   span.special {
-     color: orange;
-     font-weight: bold;
-   }
-   ~~~
-
-   
-
-2. ***多个类同时作用于一个html标签时***
-
-   对一个标签同时应用多个类，然后分别指向它们
-
-   ~~~html
-   <div class="notebox">
-       This is an informational note.
-   </div>
-   
-   <div class="notebox warning">
-       This note shows a warning.
-   </div>
-   
-   <div class="notebox danger">
-       This note shows danger!
-   </div>
-   
-   <div class="danger">
-       This won't get styled — it also needs to have the notebox class
-   </div>
-   ~~~
-
-   ~~~css
-   .notebox {
-     border: 4px solid #666;
-     padding: .5em;
-   }
-   
-   .notebox.warning {  /* 中间没有空格，直接相连*/
-     border-color: orange;
-     font-weight: bold;
-   }
-   
-   .notebox.danger {  /* 中间没有空格，直接相连*/
-     border-color: red;
-     font-weight: bold;
-   }
-   ~~~
-
-   ![image-20230207162927892](assets/image-20230207162927892.png)
 
 
 

@@ -15,7 +15,7 @@
 2. 用“javascript:”，语法“a href="javascript:void(0)"”
 
    ~~~html
-   <a href="javascript:void(0)">百度</a>  <!--直接在里面添加一个阻止事件，当然直接是"javascript:"也是可以的，最好还是写全吧-->
+   <a href="javascript:void(0)">百度</a>
    ~~~
 
    
