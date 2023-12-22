@@ -1696,7 +1696,7 @@ public class Test{
                 case "-":
                 case "*":
                 case "/":
-                    int num = solutionCore(stack.pop(),stack.pop(),s);    // + - * 都没 break，说明四个运算都会执行此处
+                    int num = solutionCore(stack.pop(),stack.pop(),s);
                     stack.push(num);
                     break;
                 default:

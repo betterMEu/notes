@@ -75,6 +75,20 @@ select lengthb('你') from dual;
 
 # Group By
 
+## （2）合计、小计
+
+有时会合计分组的数据，合计和小计
+
+~~~sql
+GROUP BY ROLLUP (t2.ND, t2.bm)
+~~~
+
+只要合计
+
+~~~sql
+GROUP BY ROLLUP ((t2.ND, t2.bm))
+~~~
+
 
 
 
@@ -983,6 +997,128 @@ SELECT instr(str, subStr) FROM dual
 
 
 
+
+
+# 行转列
+
+## 固定
+
+列在*PIVOT*里写死
+
+![image-20231221140536427](assets/image-20231221140536427.png)
+
+~~~sql
+WITH age_data AS (SELECT t2.ND,
+                         t2.bm,
+                         CASE
+                             WHEN t2.age <= 18 THEN '18-'
+                             WHEN t2.age = 19 THEN '19'
+                             WHEN t2.age = 20 THEN '20'
+                             WHEN t2.age = 21 THEN '21'
+                             WHEN t2.age = 22 THEN '22'
+                             WHEN t2.age >= 23 THEN '23+'
+                             END AS age_group
+                  FROM (SELECT lcdy.ND,
+                               bm.BMMC                                                                           AS bm,
+                               NVL2(xs.SFZJH, EXTRACT(YEAR FROM SYSDATE) - TO_NUMBER(SUBSTR(xs.SFZJH, 7, 4)), 0) AS age
+                        FROM ZHXG_YX_LCGL_LCYYFW lcyyfw
+                                 LEFT JOIN ZHXG_XSXX_XSJBXX xs ON lcyyfw.XSID = xs.PKID
+                                 LEFT JOIN ZHXG_XTGL_JCSJ_BMXX bm ON bm.PKID = xs.BMID
+                                 LEFT JOIN ZHXG_YX_LCGL_LCDY lcdy ON lcdy.PKID = lcyyfw.LCID
+                        WHERE lcdy.ND = (SELECT SJDM FROM VC_ZHXG_XTGL_SJGL_DQND v1)
+                          AND lcdy.ZT = '1'
+                          AND xs.PKID IS NOT NULL) t2),
+     pivot_data AS (SELECT ND,
+                           bm,
+                           age_group,
+                           COUNT(*) AS count
+                    FROM age_data
+                    GROUP BY ND, bm, age_group)
+SELECT *
+FROM pivot_data
+    PIVOT (
+    SUM(count)
+    FOR age_group IN (
+        '18-' AS "18-",
+        '19' AS "19",
+        '20' AS "20",
+        '21' AS "21",
+        '22' AS "22",
+        '23+' AS "23+"))
+ORDER BY ND, bm;
+~~~
+
+
+
+## 动态
+
+值有哪些，列就有多少
+
+![image-20231221140639437](assets/image-20231221140639437.png)
+
+~~~sql
+DECLARE
+    v_alias      VARCHAR2(2000);
+    v_sql_select VARCHAR2(4000);
+    v_sql_create VARCHAR2(4000);
+BEGIN
+    SELECT LISTAGG('''' || age || '''' || ' as ' || '"' || age || '"', ',') WITHIN GROUP (ORDER BY age)
+    INTO v_alias
+    FROM (SELECT DISTINCT NVL2(xs.SFZJH, EXTRACT(YEAR FROM SYSDATE) - TO_NUMBER(SUBSTR(xs.SFZJH, 7, 4)), 0) AS age
+          FROM ZHXG_YX_LCGL_LCYYFW lcyyfw
+                   LEFT JOIN ZHXG_XSXX_XSJBXX xs ON lcyyfw.XSID = xs.PKID
+                   LEFT JOIN ZHXG_XTGL_JCSJ_BMXX bm ON bm.PKID = xs.BMID
+                   LEFT JOIN ZHXG_YX_LCGL_LCDY lcdy ON lcdy.PKID = lcyyfw.LCID
+          WHERE lcdy.ND = (SELECT SJDM FROM VC_ZHXG_XTGL_SJGL_DQND v1)
+            AND lcdy.ZT = '1'
+            AND xs.PKID IS NOT NULL);
+
+    v_sql_select :=
+                'WITH age_data AS (SELECT lcdy.ND,
+                               bm.BMMC                                                                           AS bm,
+                               NVL2(xs.SFZJH, EXTRACT(YEAR FROM SYSDATE) - TO_NUMBER(SUBSTR(xs.SFZJH, 7, 4)), 0) AS age
+                        FROM ZHXG_YX_LCGL_LCYYFW lcyyfw
+                                 LEFT JOIN ZHXG_XSXX_XSJBXX xs ON lcyyfw.XSID = xs.PKID
+                                 LEFT JOIN ZHXG_XTGL_JCSJ_BMXX bm ON bm.PKID = xs.BMID
+                                 LEFT JOIN ZHXG_YX_LCGL_LCDY lcdy ON lcdy.PKID = lcyyfw.LCID
+                        WHERE lcdy.ND = (SELECT SJDM FROM VC_ZHXG_XTGL_SJGL_DQND v1)
+                          AND lcdy.ZT = ''1''
+                          AND xs.PKID IS NOT NULL),
+                     pivot_data AS (SELECT ND,
+                                           bm,
+                                           age,
+                                           COUNT(*) AS count
+                                    FROM age_data
+                                    GROUP BY ND, bm, age)
+                SELECT *
+                FROM pivot_data
+                    PIVOT (
+                    SUM(count)
+                    FOR age IN (' || v_alias || '))
+                ORDER BY ND, bm';
+
+    v_sql_create := 'create or replace view yls_nl_summary as ' || v_sql_select || ' with read only';
+
+    EXECUTE IMMEDIATE v_sql_create;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('异常');
+END;
+~~~
+
+
+
+**存在缺陷：**由于上方语句只执行一次就固定了视图的建表语句，也就是说视图的列是固定了，后续的值多了或少了，视图的列都不会有变化。当出现了60岁的数据，列中也不会出现
+
+
+
+
+
+
+
+
+
 # 聚合函数
 
 - [ANY_VALUE](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/ANY_VALUE.html#GUID-A3C47D5E-B145-40B2-93D2-CA3BA65C2D81)
@@ -1166,3 +1302,8 @@ USERNAME PROFILE RESOURCE_NAME LIMIT
 SIEBEL DEFAULT IDLE_TIME UNLIMITED
 ~~~
 
+
+
+
+
+行转列

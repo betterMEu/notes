@@ -41,9 +41,9 @@ flowchart TD;
 
 
 
-1. ### 创建 Maven 项目
+1. 创建 Maven 项目
 
-   主工程使用 dependencyManagement 声明 Spring Cloud 的统一版本，这样在工程的 Module 引入 Spring Cloud 组件依赖时不用声明组件的 Version 信息，保持了版本一致
+   主工程使用 dependencyManagement 声明 Spring Cloud 的统一版本，后续*moudle*引入*SpringCloud*组件不需要声明版本
 
    ~~~xml
    <properties>

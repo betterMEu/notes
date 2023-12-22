@@ -833,7 +833,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 ### Listener
 
-监听器，也是人们常说的“发布/订阅”
+事件监听器，在业务触发时用代码设定发布一个事件，该事件的监听器们就会工作
 
 （1）自定义事件（或使用Springboot提供的事件）继承 `ApplicationEvent`，ApplicationEvent 继承了Java的事件对象`EventObject`
 
@@ -847,7 +847,7 @@ public class MyEvent extends ApplicationEvent {
 }
 ~~~
 
-（2）监听事件，可以使用`@EventListener`注解在方法上，也可以实现`ApplicationListener<T>`
+（2）使用`@EventListener`注解在方法上，也可以实现`ApplicationListener<T>`去监听事件
 
 ~~~java
 @Slf4
@@ -864,7 +864,7 @@ public class MyEventListener {
 }
 ~~~
 
-（3）发布事件，*Springboot*使用`ApplicationEventPublisher`去发布所有事件
+（3）使用*Springboot*的`ApplicationEventPublisher`发布事件
 
 ```java
 @Service
