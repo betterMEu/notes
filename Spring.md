@@ -769,7 +769,7 @@ public class ProjectConstraintViolationFailureAnalyzer extends AbstractFailureAn
 
 ### 启动后扩展
 
-`ApplicationRunner`和`CommandLineRunner`提供一个*run()* 方法，在`SpringApplication.run(…)` 执行完毕之前被调用
+`ApplicationRunner`和`CommandLineRunner`提供一个*run()* 方法，在`SpringApplication.run(…)` 执行完之前被调用
 
 ~~~java
 @Component

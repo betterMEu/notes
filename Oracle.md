@@ -874,9 +874,6 @@ SELECT instr(str, subStr) FROM dual
   其中，`expression`是要操作的表达式，`return_format`是返回的格式，`start_position`是开始位置，`length`是长度
 
   ```sql
-  
-  
-  
   SELECT DUMP('ABC') FROM dual;
   -- Typ=96 Len=3: 65,66,67
   SELECT DUMP('ABC', 10) FROM dual;
@@ -884,7 +881,7 @@ SELECT instr(str, subStr) FROM dual
   SELECT DUMP('ABC', 10, 1, 2) FROM dual;
   -- Typ=96 Len=3: 65,66
   ```
-
+  
 - [ORA_HASH](https://docs.oracle.com/en/database/oracle/oracle-database/18/sqlrf/ORA_HASH.html#GUID-0349AFF5-0268-43CE-8118-4F96D752FDE6)
 
 - [STANDARD_HASH](https://docs.oracle.com/en/database/oracle/oracle-database/18/sqlrf/STANDARD_HASH.html#GUID-4A68DACE-CFCF-443B-8651-B6CEAA7C4FD7)
@@ -1019,7 +1016,7 @@ WITH age_data AS (SELECT t2.ND,
                              WHEN t2.age >= 23 THEN '23+'
                              END AS age_group
                   FROM (SELECT lcdy.ND,
-                               bm.BMMC                                                                           AS bm,
+                               bm.BMMC AS bm,
                                NVL2(xs.SFZJH, EXTRACT(YEAR FROM SYSDATE) - TO_NUMBER(SUBSTR(xs.SFZJH, 7, 4)), 0) AS age
                         FROM ZHXG_YX_LCGL_LCYYFW lcyyfw
                                  LEFT JOIN ZHXG_XSXX_XSJBXX xs ON lcyyfw.XSID = xs.PKID
@@ -1075,7 +1072,7 @@ BEGIN
 
     v_sql_select :=
                 'WITH age_data AS (SELECT lcdy.ND,
-                               bm.BMMC                                                                           AS bm,
+                               bm.BMMC AS bm,
                                NVL2(xs.SFZJH, EXTRACT(YEAR FROM SYSDATE) - TO_NUMBER(SUBSTR(xs.SFZJH, 7, 4)), 0) AS age
                         FROM ZHXG_YX_LCGL_LCYYFW lcyyfw
                                  LEFT JOIN ZHXG_XSXX_XSJBXX xs ON lcyyfw.XSID = xs.PKID
@@ -1199,6 +1196,8 @@ END;
 
 - [LISTAGG](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/LISTAGG.html#GUID-B6E50D8E-F467-425B-9436-F7F8BF38D466)
 
+  组合元素拼接，非常有用
+
 - [MAX](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/MAX.html#GUID-E5372020-A6DA-44BF-93BE-DA8C3F74CD01)
 
 - [MEDIAN](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/MEDIAN.html#GUID-DE15705A-AC18-4416-8487-B9E1D70CE01A)
@@ -1260,50 +1259,3 @@ END;
 - [VARIANCE](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/VARIANCE.html#GUID-EC33717A-2509-402D-B3BB-7EECB2E4ED8B)
 
 - [XMLAGG](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/XMLAGG.html#GUID-BCD1D755-5E26-4F73-BA22-521C30D275DA)
-
-
-
-
-
-# 报错
-
-## ORA-02396
-
-**Exceeded Maximum Idle Time, Please Connect Again（超过最大空闲时间，请重新连接）**
-
-应用程序长时间空闲后无法连接到数据库。
-
-解决方案:
-哪个用户连接到数据库，假设用户是WFWZHXG，查找用户IDLE_TIME资源限制设置的值
-
-~~~sql
-select a.username,b.profile,b.RESOURCE_NAME,b.LIMIT from dba_users a, dba_profiles b where
-b.resource_name='IDLE_TIME' and a.profile=b.profile and a.username='WFWZHXG';
-
-USERNAME 	PROFILE 	RESOURCE_NAME 	LIMIT
-------------- -------------- -------------------------------- --------------
-SIEBEL   	DEFAULT 	IDLE_TIME 		128000
-~~~
-
-
-这里idle_time设置为12800分钟。因此，如果会话空闲了这么长时间，那么它将被断开连接，并出现错误，
-
-
-要解决这个问题，请修改配置文件，将IDLE_TIME设置为更高的值或UNLIMITED
-
-~~~sql
-ALTER PROFILE DEFAULT LIMIT IDLE_TIME UNLIMITED;
-
-select a.username,b.profile,b.RESOURCE_NAME,b.LIMIT from dba_users a, dba_profiles b where
-b.resource_name='IDLE_TIME' and a.profile=b.profile and a.username='&USERNAME';
-
-USERNAME PROFILE RESOURCE_NAME LIMIT
-------------- -------------- -------------------------------- --------------
-SIEBEL DEFAULT IDLE_TIME UNLIMITED
-~~~
-
-
-
-
-
-行转列
