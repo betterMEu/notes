@@ -3089,14 +3089,17 @@ spring:
 ~~~java
   @Configuration
   public class RabbitmqConfig {
+      
       @Resource
       private ConnectionFactory connectionFactory;
+      
       @Bean
       public RabbitAdmin rabbitAdmin() {
           RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
           rabbitAdmin.setAutoStartup(true);
           return rabbitAdmin;
       }
+      
       // 定义队列、交换机和绑定的代码
   }
 

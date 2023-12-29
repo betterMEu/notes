@@ -1,5 +1,3 @@
-
-
 # Inverse Of Control
 
 将程序对象的创建和依赖关系的管理委托给外部容器，当需要使用对象时使用<span style='font-size:20px'>*<u>依赖注入（Dependency Injection</u>*</span>从容器获得对象。业务对象（pojo）和配置元数据（Configuration）共同作用创建出符合业务场景的对象存入容器中待使用。
@@ -10,21 +8,20 @@
 
 ## Bean
 
+### 注入
 
+1. 构造函数注入
+2. *setter*方法注入
+
+构造函数注入无法解决循环依赖，使用*setter*方式可以解决，但是不推荐这样做，但没有其它做法（废话）
 
 ### 生命周期
-
-（1）aware回调接口是在正常的Bean属性之后，但在 `InitializingBean.afterPropertiesSet()` 或自定义 `init-method` 等初始化回调之前调用的。
-
-> aware接口会将你的代码与Spring API捆绑在一起，并且不遵循反转控制的风格。因此，我们建议那些需要对容器进行编程访问的基础设施Bean使用这些接口。
 
 （2）`BeanPostProcessor` 
 
 `BeanPostProcessor` 接口定义了回调方法，可以实现这些方法来提供自己的（或覆盖容器的默认）实例化逻辑、依赖性解析逻辑等。如果想在Spring容器完成实例化、配置和初始化Bean之后实现一些自定义逻辑，可以插入一个或多个自定义 `BeanPostProcessor` 实现。
 
 配置多个 `BeanPostProcessor` 通过设置 `order` 属性控制这些 `BeanPostProcessor` 实例的运行顺序。
-
-
 
 1. **`postProcessBeforeDestruction()`** methods of DestructionAwareBeanPostProcessors
 
@@ -34,13 +31,11 @@
 
 
 
-1. ***Aware 感知接口*** 
-
-   回调接口，可以设置或者赋予一些特性。
+1. *aware*回调接口可以将*Spring*基础的*bean*在实现类中接收，如将*SpringbootApplicationContext*注入到类中
 
    ~~~java
-   public class MyApplicationContextAware implements ApplicationContextAware {
-       // 接收回调的 applicationContext 对象
+public class MyApplicationContextAware implements ApplicationContextAware {
+   
        private ApplicationContext applicationContext;
    
        @Override
@@ -49,7 +44,7 @@
        }
    }
    ~~~
-
+   
    
 
 2. **BeanPostProcessor**
@@ -101,32 +96,6 @@
 
 
 
-### 循环依赖
-
-~~~java
-public class A { 
-    private B b;
-}
-
-public class B {
-    private A a;
-}
-~~~
-
-![image-20230627192844767](assets/image-20230627192844767.png)
-
-A 和 B 相互依赖，实例化 A 的时候知道它依赖了 B，那么就会转头实例化 B，在实例化 B 时又发现了它依赖 A，相互依赖，不断掉头去实例化另一方，就会无线循环。
-
-<span style='font-size: 20px'>✔ 解决方法</span>：容器发现 B 依赖于 A 时，容器会获取 A 对象的<span style='font-size:21px'>早期引用</span>，把它注入到 B 中，让 B 先完成实例化，A 随之完成实例化。
-
-
-
-
-
-
-
-
-
 
 # Aspect Orient Programming
 
@@ -138,30 +107,22 @@ A 和 B 相互依赖，实例化 A 的时候知道它依赖了 B，那么就会�
 
 ### 代理对象生成时机
 
-通常发生在初始化后，但若是存在循环依赖，将提前生成代理对象。假设发生了循环依赖，并且代理对象不提前生成，创建 B 的时候注入的是未代理的 A；到 A 执行完属性填充，再生成代理对象，放入容器中，此时 B 中的 A 和容器中被代理的 A 不是同一个对象，出现了问题。
+通常发生在初始化后，但若是存在循环依赖，将提前生成代理对象。
+
+假设发生了循环依赖，并且代理对象不提前生成，创建 B 的时候注入的是未代理的 A；到 A 执行完属性填充，再生成代理对象，放入容器中，此时 B 中的 A 和容器中被代理的 A 不是同一个对象，出现了问题。
 
 
 
 ### 多切面执行顺序
 
-1、通常使用`@Order` 注解直接定义切面顺序
+1、`@Order` 传入数字决定顺序
 
-```java
-// 值越小优先级越高
-@Order(3)
-@Component
-@Aspect
-public class LoggingAspect implements Ordered {
-```
-
-**2、实现`Ordered` 接口重写 `getOrder` 方法。**
+2、实现`Ordered`接口
 
 ```java
 @Component
 @Aspect
 public class LoggingAspect implements Ordered {
-
-    // ....
 
     @Override
     public int getOrder() {
@@ -201,91 +162,9 @@ public class LoggingAspect implements Ordered {
 | 二   | EarlySingletonObjects | <span style='font-size:22px'>循环依赖</span>时，存放从三级缓存获取的半成品 Bean；<span style='font-size: 22px'>如果存在代理</span>，那么从三级缓存获取的是 AOP 生成的代理对象 |
 | 三   | SingletonFactories    | 半成品 Bean（单例）                                          |
 
-
-
-
-## 设计模式
-
-- 单例
-
-- 工厂
-
-- 代理
-
-- 模板方法
-
-- 包装器设计模式
-
-- **观察者模式:** Spring 事件驱动模型
-
-- **适配器模式** : Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC 中也是用到了适配器模式适配 Controller
-- ......
-
-
-
 ## 事务
 
 事务是逻辑上的一组操作，要么都执行，要么都不执行。Spring 中可以使用声明式和编程式来使用事务。
-
-
-
-### 事务属性
-
-1.隔离级别 —— 读未提交、读已提交、可重读和串行化
-
-2.传播行为 — 事务方法之间相互调用，遵循的行为守则
-
-- require（默认）：存在事务加入；不存在则创建一个
-
-- require_new：无论是否存在事务，都开启一个新的事务
-
-- nested：存在事务，创建一个子事务；不存在则创建一个。子事务回滚不会影响父事务和同级事务的回滚；父事务回滚则子事务跟着回滚。
-
-- mandatory：存在事务，加入；不存在则抛出异常
-
-- supports：存在事务，加入；不存在就以非事务的方式运行
-
-- not_supports：以非事务的方式运行，存在事务则将其挂起
-
-- never：以非事务的方式运行，存在事务则抛出异常
-
-3.超时 —— int 值，单位秒，默认值为 -1 表示永不超时
-
-4.只读 —— 只读事务不涉及数据的修改，数据库会提供一些优化手段。一次执行多条查询语句，应该启用事务支持
-
-5.回滚规则
-
-遇到 RuntimeException、Error 会回滚事务，遇到 CheckedException 不会回滚。在 @Transactional 加上 rollbackFor = Exception.class 让事务在遇到 checkedException 时也回滚
-
-```java
-@Transactional(rollbackFor= MyException.class)
-```
-
-
-
-### 事务管理器
-
-PlatformTransactionManager：开启、关闭、回滚事务
-
-
-
-### 事务状态
-
-~~~java
-public interface TransactionStatus{
-    boolean isNewTransaction(); // 是否是新的事务
-    
-    boolean hasSavepoint(); // 是否有恢复点
-    
-    void setRollbackOnly();  // 设置为只回滚
-    
-    boolean isRollbackOnly(); // 是否为只回滚
-    
-    boolean isCompleted; // 是否已完成
-}
-~~~
-
-
 
 ### 失效场景
 
@@ -461,9 +340,9 @@ Controller（控制器）
 
 ### 配置生效
 
-1. 创建多个配置文件，命名形式 application-{profile}.yml
+1. 创建不同环境下的配置文件，命名形式 application-{profile}.yml
 
-1. 指定*application.yml*生效的配置文件
+1. 在基础的配置文件*application.yml*指定环境，让其中的环境配置生效
 
    ~~~yml
    spring:
@@ -560,7 +439,7 @@ my:
 
 
 
-（2）配置类实例化为Bean
+（2）配置类注册成*Bean*
 
 在任意的`@Configuration`注解的类中使用`@EnableConfigurationProperties({配置类类名}.class)`注解可以将配置类实例化为Bean，然后就能在任意地方注入
 
