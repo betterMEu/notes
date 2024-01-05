@@ -1,6 +1,6 @@
 # Inverse Of Control
 
-将程序对象的创建和依赖关系的管理委托给外部容器，当需要使用对象时使用<span style='font-size:20px'>*<u>依赖注入（Dependency Injection</u>*</span>从容器获得对象。业务对象（pojo）和配置元数据（Configuration）共同作用创建出符合业务场景的对象存入容器中待使用。
+将对象的创建和依赖关系的管理委托给外部容器，当需要使用对象时使用<span style='font-size:20px'>*<u>依赖注入（Dependency Injection</u>*</span>从容器获得对象。业务对象（pojo）和配置元数据（Configuration）共同作用创建出符合业务场景的对象存入容器中待使用。
 
 ![container magic](assets/container-magic.png)
 
@@ -8,12 +8,18 @@
 
 ## Bean
 
+### 声明
+
+将类实例化为一个对象并且交给*Spring*容器管理，这个对象可称为*Bean*
+
+
+
 ### 注入
 
 1. 构造函数注入
 2. *setter*方法注入
 
-构造函数注入无法解决循环依赖，使用*setter*方式可以解决，但是不推荐这样做，但没有其它做法（废话）
+构造函数注入无法解决循环依赖，使用*setter*方式可以解决，但是不推荐这样做，但没有其它做法（废话
 
 ### 生命周期
 
@@ -198,9 +204,9 @@ public class MyService {
 
 # SpringMVC
 
-Model（模型）
+Model（数据）
 
-View（视图）
+View（页面）
 
 Controller（控制器）
 
@@ -233,6 +239,89 @@ Controller（控制器）
 6. DispaterServlet 对 *viewResolver* 处理后的数据附着在视图上（传统的前后端不分离，返回 html 页面给客户）
 
 7. 返回响应
+
+
+
+## Controller
+
+控制器层负责接收*Http*请求，有两个注解@RestController和@Controller，@Controller是传统的*MVC*注解，@RestController则是前后端分离模式。
+
+### @Controller
+
+`@Controller`注解下的方法可以返回多种类型的数据
+
+**String**：要渲染的视图的名称，编译期检查不到存在此视图会警告
+
+```java
+   @RequestMapping("/home")
+   public String home() {
+       return "home";
+   }
+```
+
+**ModelAndView**：视图和数据一起返回，可以在首次获取页面时用
+
+```java
+   @RequestMapping("/data")
+   public ModelAndView data() {
+       ModelAndView mav = new ModelAndView("view");
+       mav.addObject("message", "Hello World!");
+       return mav;
+   }
+```
+
+**Map**：键值类型数据
+
+```java
+   @RequestMapping("/map")
+   public Map<String, Object> map() {
+       Map<String, Object> model = new HashMap<>();
+       model.put("message", "Hello World!");
+       return model;
+   }
+```
+
+**Model**：属性和值的集合
+
+```java
+   @RequestMapping("/model")
+   public Model model() {
+       Model model = new ExtendedModelMap();
+       model.addAttribute("message", "Hello World!");
+       return model;
+   }
+```
+
+**void**：这表示没有返回值，通常用于处理异步请求或者重定向。
+
+**ResponseEntity**：这是一个包含状态码、头部和体的 HTTP 响应，可以用来发送自定义的 HTTP 响应
+
+```java
+   @RequestMapping("/responseEntity")
+   public ResponseEntity<String> responseEntity() {
+       return ResponseEntity.ok().body("Hello World!");
+   }
+```
+
+**HttpEntity**：这是一个包含头部和体的 HTTP 实体，可以用来发送自定义的 HTTP 响应
+
+```java
+   @RequestMapping("/httpEntity")
+   public HttpEntity<String> httpEntity() {
+       return new HttpEntity<>("Hello World!", new HttpHeaders());
+   }
+```
+
+**ModelMap**：这是一个包含属性和值的集合，可以用来传递数据给视图
+
+```java
+   @RequestMapping("/modelMap")
+   public ModelMap modelMap() {
+       ModelMap model = new ModelMap();
+       model.addAttribute("message", "Hello World!");
+       return model;
+   }
+```
 
 
 

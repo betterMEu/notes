@@ -1,14 +1,14 @@
 ### 分页
 
-oracle 的分页需要额外用 <font color='red'>ROWNUM</font> 列，数据库特性自带。
+*Oracle*会为每一行附上<font color='red'>ROWNUM</font>属性，标识数据行的排序号
 
 ~~~sql
-        SELECT s.*
-        FROM (SELECT ROWNUM rn,t.*
-              FROM student t
-              where ROWNUM <= #{edge}
-             ) s
-        WHERE s.rn > #{offset}
+SELECT s.*
+FROM (SELECT ROWNUM rn,t.*
+      FROM student t
+      where ROWNUM <= #{edge}
+     ) s
+WHERE s.rn > #{offset}
 ~~~
 
 先用一次子查询获取 row num 列，并且获取了 0-edge 行数据
@@ -69,15 +69,11 @@ select distinct(userenv('language')) from tableName;
 select lengthb('你') from dual;
 ```
 
-
-
-
-
 # Group By
 
 ## （2）合计、小计
 
-有时会合计分组的数据，合计和小计
+使用*ROLLUP*获取合计和小计
 
 ~~~sql
 GROUP BY ROLLUP (t2.ND, t2.bm)
@@ -88,12 +84,6 @@ GROUP BY ROLLUP (t2.ND, t2.bm)
 ~~~sql
 GROUP BY ROLLUP ((t2.ND, t2.bm))
 ~~~
-
-
-
-
-
-
 
 # NVL
 
